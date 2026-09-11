@@ -710,7 +710,11 @@
                         <h1>Historial de Progresión de Miembros</h1>
                         <p class="subtitle">Registro compartido de todo lo que se ha ganado en los Boss del clan.</p>
                     </div>
-                    <div class="container">
+                    <div id="historialLocked" class="locked-panel" hidden>
+                        <div class="lock-icon">🔒</div>
+                        <p>Necesitas una cuenta registrada para ver el historial.<br>Regístrate o inicia sesión en <a href="#" data-goto="cuenta">Mi Cuenta</a>.</p>
+                    </div>
+                    <div id="historialGate" class="container" hidden>
                         <div id="pendingBanner" class="pending-banner" hidden>
                             <span>⚠ Hay <strong id="pendingBannerCount">0</strong> registro(s) que no se pudieron guardar en Google Sheets.</span>
                         </div>
@@ -1000,6 +1004,30 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzX2pNbBJH8eN_f99KTvGBIpk51hv9HB1ooHKU_I6smVLcbWV8ukeIHHJDJYg5fZHEi3w/exec";
         const PENDING_KEY = 'muGuildPendingRecords';
 
+        /* ---------- Sesión (declarada primero: la usan casi todas las funciones) ---------- */
+        const SESSION_KEY = 'muGuildSession';
+        let currentUser = null;
+        try {
+            currentUser = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+        } catch {
+            currentUser = null;
+        }
+
+        function saveSession() {
+            try {
+                if (currentUser) localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+                else localStorage.removeItem(SESSION_KEY);
+            } catch (err) {
+                console.error('No se pudo guardar la sesión:', err);
+            }
+        }
+
+        function canManageLoot() {
+            return !!currentUser && (currentUser.role === 'admin' || currentUser.role === 'officer');
+        }
+
+        const ROLE_LABELS = { admin: 'Admin', officer: 'Oficial', player: 'Jugador' };
+
         const lootForm = document.getElementById('lootForm');
         const tableBody = document.getElementById('lootTableBody');
         const noDataRow = document.getElementById('noDataRow');
@@ -1093,8 +1121,13 @@
 
         /* ---------- Comunicación con Google Sheets ---------- */
         async function fetchRemoteRecords() {
-            const res = await fetch(SCRIPT_URL);
+            if (!currentUser) return [];
+            const url = `${SCRIPT_URL}?token=${encodeURIComponent(currentUser.token)}`;
+            const res = await fetch(url);
             const data = await res.json();
+            if (!Array.isArray(data)) {
+                throw new Error((data && data.error) || 'No autorizado para ver el historial.');
+            }
             return data.map(r => ({ ...r, id: makeId(), synced: true }));
         }
 
@@ -1498,29 +1531,6 @@
         drawWheel();
 
         /* ---------- Cuentas, roles y permisos ---------- */
-        const SESSION_KEY = 'muGuildSession';
-        let currentUser = null;
-        try {
-            currentUser = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-        } catch {
-            currentUser = null;
-        }
-
-        function saveSession() {
-            try {
-                if (currentUser) localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
-                else localStorage.removeItem(SESSION_KEY);
-            } catch (err) {
-                console.error('No se pudo guardar la sesión:', err);
-            }
-        }
-
-        function canManageLoot() {
-            return !!currentUser && (currentUser.role === 'admin' || currentUser.role === 'officer');
-        }
-
-        const ROLE_LABELS = { admin: 'Admin', officer: 'Oficial', player: 'Jugador' };
-
         function updateGates() {
             const allowed = canManageLoot();
             document.getElementById('registroGate').hidden = !allowed;
@@ -1529,6 +1539,8 @@
             document.getElementById('ruletaLocked').hidden = allowed;
 
             const loggedIn = !!currentUser;
+            document.getElementById('historialGate').hidden = !loggedIn;
+            document.getElementById('historialLocked').hidden = loggedIn;
             document.getElementById('authLoggedOut').hidden = loggedIn;
             document.getElementById('authLoggedIn').hidden = !loggedIn;
             document.getElementById('adminPanel').hidden = !(currentUser && currentUser.role === 'admin');
@@ -1591,6 +1603,7 @@
             document.getElementById('loginForm').reset();
             updateGates();
             loadMyProgress();
+            loadRecords();
         });
 
         document.getElementById('registerForm').addEventListener('submit', async function (e) {
@@ -1637,6 +1650,7 @@
             currentUser = null;
             saveSession();
             updateGates();
+            loadRecords();
         });
 
         document.getElementById('btnRefreshProgress').addEventListener('click', loadMyProgress);
