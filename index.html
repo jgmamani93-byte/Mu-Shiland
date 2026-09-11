@@ -981,7 +981,9 @@
                             <h2>Gestionar Roles (Admin)</h2>
                             <div class="form-group">
                                 <label for="roleTargetUsername">Nombre de PJ</label>
-                                <input type="text" id="roleTargetUsername" placeholder="Nombre exacto del PJ registrado">
+                                <select id="roleTargetUsername">
+                                    <option value="">Selecciona un jugador registrado...</option>
+                                </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label for="roleTargetRole">Nuevo rol</label>
@@ -1001,7 +1003,9 @@
                             <h2>Resetear Contraseña (Admin)</h2>
                             <div class="form-group">
                                 <label for="resetTargetUsername">Nombre de PJ</label>
-                                <input type="text" id="resetTargetUsername" placeholder="Nombre exacto del PJ registrado">
+                                <select id="resetTargetUsername">
+                                    <option value="">Selecciona un jugador registrado...</option>
+                                </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label for="resetNewPassword">Nueva contraseña</label>
@@ -1613,6 +1617,12 @@
 
             const participantSelect = document.getElementById('participantName');
             if (participantSelect) participantSelect.innerHTML = options.replace('un jugador registrado...', 'un jugador...');
+
+            const roleTargetSelect = document.getElementById('roleTargetUsername');
+            if (roleTargetSelect) roleTargetSelect.innerHTML = options;
+
+            const resetTargetSelect = document.getElementById('resetTargetUsername');
+            if (resetTargetSelect) resetTargetSelect.innerHTML = options;
         }
 
         async function loadRegisteredPlayers() {
