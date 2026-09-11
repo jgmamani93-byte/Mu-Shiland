@@ -93,6 +93,7 @@ function doPost(e) {
     if (action === 'setRole') return handleSetRole(p);
     if (action === 'addLoot') return handleAddLoot(p);
     if (action === 'listPlayers') return handleListPlayers(p);
+    if (action === 'resetPassword') return handleResetPassword(p);
 
     return jsonOut({ ok: false, error: 'Acción desconocida.' });
   } catch (err) {
@@ -186,6 +187,25 @@ function handleListPlayers(p) {
     .map(r => ({ username: r[0], pClass: r[4] }))
     .sort((a, b) => a.username.localeCompare(b.username));
   return jsonOut({ ok: true, players });
+}
+
+function handleResetPassword(p) {
+  const check = requireRole(p.token, ['admin']);
+  if (!check.ok) return jsonOut(check);
+
+  const newPassword = p.newPassword || '';
+  if (newPassword.length < 4) return jsonOut({ ok: false, error: 'La contraseña debe tener al menos 4 caracteres.' });
+
+  const sheet = getUsersSheet();
+  const target = findUserRow(sheet, (p.targetUsername || '').trim());
+  if (!target) return jsonOut({ ok: false, error: 'Ese usuario no existe.' });
+
+  const salt = Utilities.getUuid();
+  const hash = hashPassword(newPassword, salt);
+  sheet.getRange(target.rowIndex, 2).setValue(hash); // passwordHash
+  sheet.getRange(target.rowIndex, 3).setValue(salt); // salt
+  sheet.getRange(target.rowIndex, 6).setValue(''); // invalida cualquier sesión anterior
+  return jsonOut({ ok: true });
 }
 
 function handleSetRole(p) {

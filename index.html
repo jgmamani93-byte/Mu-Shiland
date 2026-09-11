@@ -996,6 +996,22 @@
                             </div>
                             <p id="setRoleMessage" class="auth-success" hidden></p>
                         </div>
+
+                        <div id="resetPasswordPanel" class="container" hidden style="margin-top: 24px;">
+                            <h2>Resetear Contraseña (Admin)</h2>
+                            <div class="form-group">
+                                <label for="resetTargetUsername">Nombre de PJ</label>
+                                <input type="text" id="resetTargetUsername" placeholder="Nombre exacto del PJ registrado">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="resetNewPassword">Nueva contraseña</label>
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <input type="text" id="resetNewPassword" placeholder="Mínimo 4 caracteres" style="flex:1; min-width:160px;">
+                                    <button type="button" id="btnResetPassword" style="width:auto; white-space:nowrap;">Resetear contraseña</button>
+                                </div>
+                            </div>
+                            <p id="resetPasswordMessage" class="auth-success" hidden></p>
+                        </div>
                     </div>
                 </section>
 
@@ -1547,7 +1563,9 @@
             document.getElementById('historialLocked').hidden = loggedIn;
             document.getElementById('authLoggedOut').hidden = loggedIn;
             document.getElementById('authLoggedIn').hidden = !loggedIn;
-            document.getElementById('adminPanel').hidden = !(currentUser && currentUser.role === 'admin');
+            const isAdmin = !!(currentUser && currentUser.role === 'admin');
+            document.getElementById('adminPanel').hidden = !isAdmin;
+            document.getElementById('resetPasswordPanel').hidden = !isAdmin;
             document.getElementById('navAccountLabel').textContent = loggedIn ? `🔑 ${currentUser.username}` : '🔑 Mi Cuenta';
 
             if (loggedIn) {
@@ -1715,6 +1733,28 @@
             msgEl.textContent = `Rol de "${targetUsername}" actualizado a ${ROLE_LABELS[newRole] || newRole}.`;
             msgEl.hidden = false;
             document.getElementById('roleTargetUsername').value = '';
+        });
+
+        document.getElementById('btnResetPassword').addEventListener('click', async function () {
+            const targetUsername = document.getElementById('resetTargetUsername').value.trim();
+            const newPassword = document.getElementById('resetNewPassword').value;
+            const msgEl = document.getElementById('resetPasswordMessage');
+            msgEl.hidden = true;
+            if (!targetUsername || !newPassword) return;
+
+            const result = await postToScript({ action: 'resetPassword', token: currentUser.token, targetUsername, newPassword });
+            if (result.ok === null) {
+                alert('No se pudo actualizar desde este archivo local. Usa la versión publicada.');
+                return;
+            }
+            if (!result.ok) {
+                alert(result.error || 'No se pudo resetear la contraseña.');
+                return;
+            }
+            msgEl.textContent = `Contraseña de "${targetUsername}" actualizada. Avísale la nueva por otro medio.`;
+            msgEl.hidden = false;
+            document.getElementById('resetTargetUsername').value = '';
+            document.getElementById('resetNewPassword').value = '';
         });
 
         document.querySelectorAll('[data-goto]').forEach(link => {
