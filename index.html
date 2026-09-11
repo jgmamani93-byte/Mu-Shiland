@@ -170,6 +170,20 @@
         }
         .btn-secondary:hover { background: transparent; border-color: var(--accent-color); color: var(--accent-color); }
 
+        /* Cuentas / permisos */
+        .auth-error { color: var(--danger-color); font-size: 0.88rem; margin: -8px 0 14px; }
+        .auth-success { color: var(--success-color); font-size: 0.88rem; margin: -8px 0 14px; }
+        .locked-panel {
+            background: var(--card-bg);
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 40px 30px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .locked-panel .lock-icon { font-size: 2rem; margin-bottom: 10px; }
+        .locked-panel a { color: var(--accent-color); }
+
         /* Reglas Detalladas */
         .rule-section {
             margin-bottom: 25px;
@@ -433,6 +447,9 @@
                 </button>
                 <button type="button" class="nav-item" data-section="guia">🗺️ Guía de Bosses</button>
                 <button type="button" class="nav-item" data-section="reglamento">📜 Reglamento</button>
+                <button type="button" class="nav-item" data-section="cuenta">
+                    <span id="navAccountLabel">🔑 Mi Cuenta</span>
+                </button>
             </nav>
         </aside>
 
@@ -445,7 +462,11 @@
                         <h1>Registrar Loot Obtenido</h1>
                         <p class="subtitle">Cada ítem o recompensa ganada en un Boss se guarda en la base de datos del clan.</p>
                     </div>
-                    <div class="container">
+                    <div id="registroLocked" class="locked-panel" hidden>
+                        <div class="lock-icon">🔒</div>
+                        <p>Solo Admin u Oficiales pueden registrar loot.<br>Inicia sesión con una cuenta autorizada en <a href="#" data-goto="cuenta">Mi Cuenta</a>.</p>
+                    </div>
+                    <div id="registroGate" class="container">
                         <form id="lootForm" autocomplete="off">
                             <div class="form-group">
                                 <label for="playerName">Nombre del Personaje (PJ Main)</label>
@@ -627,7 +648,11 @@
                         <button type="button" id="btnResetRoulette" class="btn-secondary">🔄 Nueva Ruleta</button>
                     </div>
 
-                    <div class="ruleta-grid">
+                    <div id="ruletaLocked" class="locked-panel" hidden>
+                        <div class="lock-icon">🔒</div>
+                        <p>Solo Admin u Oficiales pueden usar la Ruleta.<br>Inicia sesión con una cuenta autorizada en <a href="#" data-goto="cuenta">Mi Cuenta</a>.</p>
+                    </div>
+                    <div id="ruletaGate" class="ruleta-grid">
                         <div class="ruleta-left">
                             <div class="container" style="margin-bottom: 24px;">
                                 <h2>1. Datos del sorteo</h2>
@@ -852,6 +877,120 @@
                     </div>
                 </section>
 
+                <!-- SECCIÓN MI CUENTA -->
+                <section id="section-cuenta" class="panel-section">
+                    <div class="page-header">
+                        <h1>Mi Cuenta</h1>
+                        <p class="subtitle">Registra tu PJ Main para ver tu progreso. Los roles de Admin/Oficial pueden Registrar Loot y usar la Ruleta.</p>
+                    </div>
+
+                    <!-- Vista: no ha iniciado sesión -->
+                    <div id="authLoggedOut">
+                        <div class="container" style="margin-bottom: 24px;">
+                            <h2>Iniciar sesión</h2>
+                            <form id="loginForm" autocomplete="off">
+                                <div class="form-group">
+                                    <label for="loginUsername">Nombre de PJ</label>
+                                    <input type="text" id="loginUsername" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="loginPassword">Contraseña</label>
+                                    <input type="password" id="loginPassword" required>
+                                </div>
+                                <p id="loginError" class="auth-error" hidden></p>
+                                <button type="submit">Iniciar sesión</button>
+                            </form>
+                        </div>
+
+                        <div class="container">
+                            <h2>Registrar mi PJ</h2>
+                            <form id="registerForm" autocomplete="off">
+                                <div class="form-group">
+                                    <label for="registerUsername">Nombre del PJ Main</label>
+                                    <input type="text" id="registerUsername" placeholder="Ej: DarkKnight99" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="registerClass">Clase</label>
+                                    <select id="registerClass" required>
+                                        <option value="">Selecciona la clase...</option>
+                                        <option value="Dark Wizard (SM)">Dark Wizard (SM)</option>
+                                        <option value="Dark Knight (BK)">Dark Knight (BK)</option>
+                                        <option value="Fairy Elf (ME)">Fairy Elf (ME)</option>
+                                        <option value="Magic Gladiator (MG)">Magic Gladiator (MG)</option>
+                                        <option value="Dark Lord (DL)">Dark Lord (DL)</option>
+                                        <option value="Summoner (SU)">Summoner (SU)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="registerPassword">Contraseña</label>
+                                    <input type="password" id="registerPassword" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="registerPassword2">Confirmar contraseña</label>
+                                    <input type="password" id="registerPassword2" required>
+                                </div>
+                                <p id="registerError" class="auth-error" hidden></p>
+                                <p id="registerSuccess" class="auth-success" hidden></p>
+                                <button type="submit">Registrar mi PJ</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Vista: sesión iniciada -->
+                    <div id="authLoggedIn" hidden>
+                        <div class="container" style="margin-bottom: 24px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                                <div>
+                                    <h2 style="margin-bottom:4px; border-bottom:none; padding-bottom:0;" id="accountWelcome">Hola</h2>
+                                    <p class="subtitle" style="margin:0;" id="accountRoleLabel"></p>
+                                </div>
+                                <button type="button" id="btnLogout" class="btn-secondary">Cerrar sesión</button>
+                            </div>
+                        </div>
+
+                        <div class="container" style="margin-bottom: 24px;">
+                            <div class="table-actions">
+                                <h2>Mi Progreso</h2>
+                                <button type="button" id="btnRefreshProgress" class="btn-export">🔄 Actualizar</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Jefe / Evento</th>
+                                            <th>Ítem / Recompensa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="myProgressBody">
+                                        <tr><td colspan="3" class="no-data">Aún no tienes ítems registrados.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="adminPanel" class="container" hidden>
+                            <h2>Gestionar Roles (Admin)</h2>
+                            <div class="form-group">
+                                <label for="roleTargetUsername">Nombre de PJ</label>
+                                <input type="text" id="roleTargetUsername" placeholder="Nombre exacto del PJ registrado">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="roleTargetRole">Nuevo rol</label>
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <select id="roleTargetRole" style="flex:1; min-width:160px;">
+                                        <option value="player">Jugador (solo ve su progreso)</option>
+                                        <option value="officer">Oficial (Ruleta + Registrar Loot)</option>
+                                        <option value="admin">Admin (acceso total)</option>
+                                    </select>
+                                    <button type="button" id="btnSetRole" style="width:auto; white-space:nowrap;">Actualizar rol</button>
+                                </div>
+                            </div>
+                            <p id="setRoleMessage" class="auth-success" hidden></p>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </main>
     </div>
@@ -969,17 +1108,39 @@
             );
         }
 
-        async function saveRecord(record) {
+        async function postToScript(params) {
             const formData = new FormData();
-            formData.append('date', record.date);
-            formData.append('name', record.name);
-            formData.append('pClass', record.pClass);
-            formData.append('boss', record.boss);
-            formData.append('item', record.item);
-            // Google Apps Script no manda cabeceras CORS válidas para el origen "null" (archivo
-            // abierto con file://) en respuestas POST, así que no podemos leer la respuesta directo.
-            // Se manda en modo no-cors (igual llega y se guarda) y se confirma con una lectura GET aparte.
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
+            Object.entries(params).forEach(([key, value]) => formData.append(key, value ?? ''));
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
+                return await res.json();
+            } catch (err) {
+                // Algunos navegadores (ej. al abrir el archivo con file://, origen "null") bloquean
+                // la lectura de la respuesta de un POST a Apps Script por CORS, aunque la petición
+                // sí llegue y se ejecute. Reintentamos en modo no-cors: no podemos leer la respuesta,
+                // así que devolvemos ok:null para que quien llamó decida cómo confirmar el resultado.
+                try {
+                    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
+                    return { ok: null };
+                } catch (err2) {
+                    return { ok: false, error: 'Sin conexión con el servidor.' };
+                }
+            }
+        }
+
+        async function saveRecord(record) {
+            if (!canManageLoot()) throw new Error('No tienes permiso para registrar loot.');
+            const result = await postToScript({
+                action: 'addLoot',
+                token: currentUser.token,
+                date: record.date,
+                name: record.name,
+                pClass: record.pClass,
+                boss: record.boss,
+                item: record.item
+            });
+            if (result.ok === true) return;
+            if (result.ok === false) throw new Error(result.error || 'No se pudo guardar en Google Sheets.');
             const saved = await verifyRecordSaved(record);
             if (!saved) throw new Error('No se pudo confirmar el guardado en Google Sheets');
         }
@@ -1335,6 +1496,181 @@
         });
 
         drawWheel();
+
+        /* ---------- Cuentas, roles y permisos ---------- */
+        const SESSION_KEY = 'muGuildSession';
+        let currentUser = null;
+        try {
+            currentUser = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+        } catch {
+            currentUser = null;
+        }
+
+        function saveSession() {
+            try {
+                if (currentUser) localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+                else localStorage.removeItem(SESSION_KEY);
+            } catch (err) {
+                console.error('No se pudo guardar la sesión:', err);
+            }
+        }
+
+        function canManageLoot() {
+            return !!currentUser && (currentUser.role === 'admin' || currentUser.role === 'officer');
+        }
+
+        const ROLE_LABELS = { admin: 'Admin', officer: 'Oficial', player: 'Jugador' };
+
+        function updateGates() {
+            const allowed = canManageLoot();
+            document.getElementById('registroGate').hidden = !allowed;
+            document.getElementById('registroLocked').hidden = allowed;
+            document.getElementById('ruletaGate').hidden = !allowed;
+            document.getElementById('ruletaLocked').hidden = allowed;
+
+            const loggedIn = !!currentUser;
+            document.getElementById('authLoggedOut').hidden = loggedIn;
+            document.getElementById('authLoggedIn').hidden = !loggedIn;
+            document.getElementById('adminPanel').hidden = !(currentUser && currentUser.role === 'admin');
+            document.getElementById('navAccountLabel').textContent = loggedIn ? `🔑 ${currentUser.username}` : '🔑 Mi Cuenta';
+
+            if (loggedIn) {
+                document.getElementById('accountWelcome').textContent = `Hola, ${currentUser.username}`;
+                document.getElementById('accountRoleLabel').textContent = `Rol: ${ROLE_LABELS[currentUser.role] || currentUser.role}`;
+            }
+        }
+
+        async function loadMyProgress() {
+            if (!currentUser) return;
+            const body = document.getElementById('myProgressBody');
+            const result = await postToScript({ action: 'myProgress', token: currentUser.token });
+            if (result.ok === null) {
+                body.innerHTML = '<tr><td colspan="3" class="no-data">No se pudo cargar desde este archivo local. Usa la versión publicada.</td></tr>';
+                return;
+            }
+            if (!result.ok) {
+                body.innerHTML = `<tr><td colspan="3" class="no-data">${escapeHtml(result.error || 'Error al cargar tu progreso.')}</td></tr>`;
+                return;
+            }
+            if (!result.records.length) {
+                body.innerHTML = '<tr><td colspan="3" class="no-data">Aún no tienes ítems registrados.</td></tr>';
+                return;
+            }
+            body.innerHTML = '';
+            result.records.forEach(r => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${escapeHtml(r.date)}</td>
+                    <td>${escapeHtml(r.boss)}</td>
+                    <td style="color: var(--accent-color); font-weight:500;">${escapeHtml(r.item)}</td>
+                `;
+                body.appendChild(row);
+            });
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+            errorEl.hidden = true;
+
+            const result = await postToScript({ action: 'login', username, password });
+            if (result.ok === null) {
+                errorEl.textContent = 'No se pudo iniciar sesión desde este archivo local. Usa la versión publicada.';
+                errorEl.hidden = false;
+                return;
+            }
+            if (!result.ok) {
+                errorEl.textContent = result.error || 'No se pudo iniciar sesión.';
+                errorEl.hidden = false;
+                return;
+            }
+            currentUser = { username: result.username, role: result.role, pClass: result.pClass, token: result.token };
+            saveSession();
+            document.getElementById('loginForm').reset();
+            updateGates();
+            loadMyProgress();
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value.trim();
+            const pClass = document.getElementById('registerClass').value;
+            const password = document.getElementById('registerPassword').value;
+            const password2 = document.getElementById('registerPassword2').value;
+            const errorEl = document.getElementById('registerError');
+            const successEl = document.getElementById('registerSuccess');
+            errorEl.hidden = true;
+            successEl.hidden = true;
+
+            if (password !== password2) {
+                errorEl.textContent = 'Las contraseñas no coinciden.';
+                errorEl.hidden = false;
+                return;
+            }
+            if (password.length < 4) {
+                errorEl.textContent = 'La contraseña debe tener al menos 4 caracteres.';
+                errorEl.hidden = false;
+                return;
+            }
+
+            const result = await postToScript({ action: 'register', username, pClass, password });
+            if (result.ok === null) {
+                errorEl.textContent = 'No se pudo registrar desde este archivo local. Usa la versión publicada.';
+                errorEl.hidden = false;
+                return;
+            }
+            if (!result.ok) {
+                errorEl.textContent = result.error || 'No se pudo registrar.';
+                errorEl.hidden = false;
+                return;
+            }
+            successEl.textContent = result.role === 'admin'
+                ? '¡Listo! Como eres el primer PJ registrado, quedaste como Admin. Ya puedes iniciar sesión.'
+                : '¡Listo! Tu PJ quedó registrado. Ya puedes iniciar sesión.';
+            successEl.hidden = false;
+            document.getElementById('registerForm').reset();
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', function () {
+            currentUser = null;
+            saveSession();
+            updateGates();
+        });
+
+        document.getElementById('btnRefreshProgress').addEventListener('click', loadMyProgress);
+
+        document.getElementById('btnSetRole').addEventListener('click', async function () {
+            const targetUsername = document.getElementById('roleTargetUsername').value.trim();
+            const newRole = document.getElementById('roleTargetRole').value;
+            const msgEl = document.getElementById('setRoleMessage');
+            msgEl.hidden = true;
+            if (!targetUsername) return;
+
+            const result = await postToScript({ action: 'setRole', token: currentUser.token, targetUsername, newRole });
+            if (result.ok === null) {
+                alert('No se pudo actualizar desde este archivo local. Usa la versión publicada.');
+                return;
+            }
+            if (!result.ok) {
+                alert(result.error || 'No se pudo actualizar el rol.');
+                return;
+            }
+            msgEl.textContent = `Rol de "${targetUsername}" actualizado a ${ROLE_LABELS[newRole] || newRole}.`;
+            msgEl.hidden = false;
+            document.getElementById('roleTargetUsername').value = '';
+        });
+
+        document.querySelectorAll('[data-goto]').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                showSection(this.dataset.goto);
+            });
+        });
+
+        updateGates();
+        if (currentUser) loadMyProgress();
     </script>
 </body>
 </html>
