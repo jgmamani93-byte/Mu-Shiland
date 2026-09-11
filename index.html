@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arctic Monkeys - Panel de Guild</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: #161616;
+            --accent-color: #c9973f;
+            --accent-hover: #dcae5c;
+            --text-color: #f2f0ea;
+            --text-muted: #8f8f8a;
+            --border-color: #2b2b2b;
+            --success-color: #4caf6d;
+            --danger-color: #d64545;
+            --danger-hover: #c23a3a;
+        }
+
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+
+        body {
+            font-family: 'Oswald', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-brand {
+            color: var(--accent-color);
+            font-family: 'Anton', 'Oswald', sans-serif;
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.6rem;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .sidebar-brand small {
+            display: block;
+            color: var(--text-muted);
+            text-transform: none;
+            letter-spacing: normal;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: normal;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: none;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .nav-item:hover { background: rgba(201, 151, 63, 0.12); color: var(--text-color); }
+        .nav-item.active { background: var(--accent-color); color: #0a0a0a; font-weight: bold; }
+        .pending-badge {
+            background: var(--danger-color);
+            color: #fff;
+            border-radius: 10px;
+            padding: 1px 8px;
+            font-size: 0.72rem;
+            font-weight: bold;
+        }
+        .nav-item.active .pending-badge { background: #0a0a0a; color: var(--danger-color); }
+
+        /* Content */
+        .content {
+            flex: 1;
+            min-width: 0;
+            padding: 30px;
+        }
+        .content-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .panel-section { display: none; }
+        .panel-section.active { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+        }
+
+        h1, h2 {
+            color: var(--accent-color);
+            font-family: 'Anton', 'Oswald', sans-serif;
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0;
+        }
+
+        h1 { font-size: 2rem; }
+
+        h2 {
+            font-size: 1.4rem;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 0;
+        }
+
+        .page-header { margin-bottom: 24px; }
+        .ruleta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .btn-secondary {
+            width: auto;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .btn-secondary:hover { background: transparent; border-color: var(--accent-color); color: var(--accent-color); }
+
+        /* Reglas Detalladas */
+        .rule-section {
+            margin-bottom: 25px;
+        }
+        .rule-section p { margin: 0 0 5px 0; font-weight: bold; color: #fff; }
+        .rule-subtext { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 8px; }
+        ul { margin: 0; padding-left: 20px; color: var(--text-muted); }
+        li { margin-bottom: 5px; }
+        .highlight { color: var(--accent-color); font-weight: bold; }
+
+        /* Formulario */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            border: none;
+            border-radius: 6px;
+            color: #0a0a0a;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background 0.2s;
+        }
+        button:hover { background: var(--accent-hover); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Tabla Base de Datos */
+        .table-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .table-actions h2 { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .btn-export {
+            background: var(--success-color);
+            color: #fff;
+            width: auto;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        .btn-export:hover { background: #22c35e; }
+
+        .btn-retry-all {
+            background: var(--danger-color);
+            color: #fff;
+            width: auto;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        .btn-retry-all:hover { background: var(--danger-hover); }
+
+        .pending-banner {
+            background: rgba(255, 107, 107, 0.12);
+            border: 1px solid var(--danger-color);
+            color: #ffb3b3;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: #0a0a0a;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        .no-data {
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .status-ok { color: var(--success-color); font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
+        .status-pending { color: var(--danger-color); font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
+        .btn-retry-row {
+            width: auto;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            margin-left: 6px;
+            background: var(--danger-color);
+            text-transform: none;
+        }
+        .btn-retry-row:hover { background: var(--danger-hover); }
+
+        /* Guía de Bosses */
+        .guide-block { margin-bottom: 24px; }
+        .guide-block:last-child { margin-bottom: 0; }
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+        }
+        .guide-card {
+            background: #0a0a0a;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+        .guide-title { margin: 0 0 8px 0; font-weight: bold; color: #fff; font-size: 1rem; }
+        .guide-row { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 4px; }
+        .guide-row:last-child { margin-bottom: 0; }
+        .guide-row strong { color: #fff; font-weight: 600; }
+
+        /* Ruleta */
+        .participant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .participant-chip {
+            background: #0a0a0a;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 6px 8px 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-color);
+        }
+        .participant-chip .chip-class { color: var(--text-muted); font-size: 0.78rem; }
+        .participant-chip button {
+            width: auto;
+            padding: 2px 8px;
+            background: transparent;
+            color: var(--danger-color);
+            font-weight: bold;
+            font-size: 0.9rem;
+            border-radius: 50%;
+        }
+        .participant-chip button:hover { background: rgba(214, 69, 69, 0.15); }
+        .no-participants { color: var(--text-muted); font-style: italic; font-size: 0.9rem; margin-top: 12px; }
+
+        .ruleta-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (min-width: 1000px) {
+            .ruleta-grid { grid-template-columns: 1fr 420px; }
+        }
+
+        .wheel-wrap {
+            position: relative;
+            width: 360px;
+            max-width: 100%;
+            margin: 10px auto 0;
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 24px solid var(--accent-color);
+            z-index: 2;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+        }
+        #wheelCanvas {
+            display: block;
+            border-radius: 50%;
+            border: 4px solid var(--accent-color);
+            background: #111;
+            max-width: 100%;
+            height: auto;
+        }
+        .roulette-result {
+            margin-top: 20px;
+            font-family: 'Anton', sans-serif;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        @media (max-width: 850px) {
+            .app-shell { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                display: flex;
+                align-items: center;
+                overflow-x: auto;
+                padding: 12px;
+                gap: 8px;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .sidebar-brand { display: none; }
+            .nav-item { width: auto; white-space: nowrap; margin-bottom: 0; }
+            .content { padding: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">Arctic Monkeys<small>MU Online Guild</small></div>
+            <nav>
+                <button type="button" class="nav-item" data-section="registro">📝 Registrar Loot</button>
+                <button type="button" class="nav-item" data-section="ruleta">🎡 Ruleta</button>
+                <button type="button" class="nav-item" data-section="historial">
+                    <span>📊 Historial</span>
+                    <span id="navPendingBadge" class="pending-badge" hidden>0</span>
+                </button>
+                <button type="button" class="nav-item" data-section="guia">🗺️ Guía de Bosses</button>
+                <button type="button" class="nav-item" data-section="reglamento">📜 Reglamento</button>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="content-inner">
+
+                <!-- SECCIÓN FORMULARIO -->
+                <section id="section-registro" class="panel-section">
+                    <div class="page-header">
+                        <h1>Registrar Loot Obtenido</h1>
+                        <p class="subtitle">Cada ítem o recompensa ganada en un Boss se guarda en la base de datos del clan.</p>
+                    </div>
+                    <div class="container">
+                        <form id="lootForm" autocomplete="off">
+                            <div class="form-group">
+                                <label for="playerName">Nombre del Personaje (PJ Main)</label>
+                                <input type="text" id="playerName" placeholder="Ej: DarkKnight99" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="playerClass">Clase del PJ</label>
+                                <select id="playerClass" required>
+                                    <option value="">Selecciona la clase...</option>
+                                    <option value="Dark Wizard (SM)">Dark Wizard (SM)</option>
+                                    <option value="Dark Knight (BK)">Dark Knight (BK)</option>
+                                    <option value="Fairy Elf (ME)">Fairy Elf (ME)</option>
+                                    <option value="Magic Gladiator (MG)">Magic Gladiator (MG)</option>
+                                    <option value="Dark Lord (DL)">Dark Lord (DL)</option>
+                                    <option value="Summoner (SU)">Summoner (SU)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bossName">Jefe / Evento</label>
+                                <input type="text" id="bossName" list="muBosses" placeholder="Ej: Escribe para buscar Boss..." required>
+                                <datalist id="muBosses">
+                                    <option value="Kundun"></option>
+                                    <option value="Tantalos"></option>
+                                    <option value="Medusa"></option>
+                                    <option value="Selupan"></option>
+                                </datalist>
+                            </div>
+                            <div class="form-group">
+                                <label for="itemName">Ítem Ganado o Recompensa (Tiene Autocompletado)</label>
+                                <input type="text" id="itemName" list="muItems" placeholder="Escribe para buscar ítem o set..." required>
+                                <datalist id="muItems">
+                                    <option value="2,000 WCoin (WC)"></option>
+                                    <option value="1,000 WCoin (WC)"></option>
+                                    <option value="Jewel of Bless"></option>
+                                    <option value="Jewel of Soul"></option>
+                                    <option value="Jewel of Life"></option>
+                                    <option value="Jewel of Chaos"></option>
+
+                                    <!-- Great Dragon (BK) -->
+                                    <option value="Excellent Great Dragon Helm"></option>
+                                    <option value="Excellent Great Dragon Armor"></option>
+                                    <option value="Excellent Great Dragon Pants"></option>
+                                    <option value="Excellent Great Dragon Gloves"></option>
+                                    <option value="Excellent Great Dragon Boots"></option>
+
+                                    <!-- Dark Phoenix (BK) -->
+                                    <option value="Excellent Dark Phoenix Helm"></option>
+                                    <option value="Excellent Dark Phoenix Armor"></option>
+                                    <option value="Excellent Dark Phoenix Pants"></option>
+                                    <option value="Excellent Dark Phoenix Gloves"></option>
+                                    <option value="Excellent Dark Phoenix Boots"></option>
+
+                                    <!-- Black Dragon (BK) -->
+                                    <option value="Excellent Black Dragon Helm"></option>
+                                    <option value="Excellent Black Dragon Armor"></option>
+                                    <option value="Excellent Black Dragon Pants"></option>
+                                    <option value="Excellent Black Dragon Gloves"></option>
+                                    <option value="Excellent Black Dragon Boots"></option>
+
+                                    <!-- Ashcrow (BK/MG) -->
+                                    <option value="Excellent Ashcrow Helm"></option>
+                                    <option value="Excellent Ashcrow Armor"></option>
+                                    <option value="Excellent Ashcrow Pants"></option>
+                                    <option value="Excellent Ashcrow Gloves"></option>
+                                    <option value="Excellent Ashcrow Boots"></option>
+
+                                    <!-- Dark Soul (SM) -->
+                                    <option value="Excellent Dark Soul Helm"></option>
+                                    <option value="Excellent Dark Soul Armor"></option>
+                                    <option value="Excellent Dark Soul Pants"></option>
+                                    <option value="Excellent Dark Soul Gloves"></option>
+                                    <option value="Excellent Dark Soul Boots"></option>
+
+                                    <!-- Grand Soul (SM) -->
+                                    <option value="Excellent Grand Soul Helm"></option>
+                                    <option value="Excellent Grand Soul Armor"></option>
+                                    <option value="Excellent Grand Soul Pants"></option>
+                                    <option value="Excellent Grand Soul Gloves"></option>
+                                    <option value="Excellent Grand Soul Boots"></option>
+
+                                    <!-- Legendary (SM) -->
+                                    <option value="Excellent Legendary Helm"></option>
+                                    <option value="Excellent Legendary Armor"></option>
+                                    <option value="Excellent Legendary Pants"></option>
+                                    <option value="Excellent Legendary Gloves"></option>
+                                    <option value="Excellent Legendary Boots"></option>
+
+                                    <!-- Eclipse (SM/MG) -->
+                                    <option value="Excellent Eclipse Helm"></option>
+                                    <option value="Excellent Eclipse Armor"></option>
+                                    <option value="Excellent Eclipse Pants"></option>
+                                    <option value="Excellent Eclipse Gloves"></option>
+                                    <option value="Excellent Eclipse Boots"></option>
+
+                                    <!-- Divine (ELF) -->
+                                    <option value="Excellent Divine Helm"></option>
+                                    <option value="Excellent Divine Armor"></option>
+                                    <option value="Excellent Divine Pants"></option>
+                                    <option value="Excellent Divine Gloves"></option>
+                                    <option value="Excellent Divine Boots"></option>
+
+                                    <!-- Guardian (ELF) -->
+                                    <option value="Excellent Guardian Helm"></option>
+                                    <option value="Excellent Guardian Armor"></option>
+                                    <option value="Excellent Guardian Pants"></option>
+                                    <option value="Excellent Guardian Gloves"></option>
+                                    <option value="Excellent Guardian Boots"></option>
+
+                                    <!-- Iris (ELF) -->
+                                    <option value="Excellent Iris Helm"></option>
+                                    <option value="Excellent Iris Armor"></option>
+                                    <option value="Excellent Iris Pants"></option>
+                                    <option value="Excellent Iris Gloves"></option>
+                                    <option value="Excellent Iris Boots"></option>
+
+                                    <!-- Dark Steel (DL) -->
+                                    <option value="Excellent Dark Steel Helm"></option>
+                                    <option value="Excellent Dark Steel Armor"></option>
+                                    <option value="Excellent Dark Steel Pants"></option>
+                                    <option value="Excellent Dark Steel Gloves"></option>
+                                    <option value="Excellent Dark Steel Boots"></option>
+
+                                    <!-- Adamantine (DL) -->
+                                    <option value="Excellent Adamantine Helm"></option>
+                                    <option value="Excellent Adamantine Armor"></option>
+                                    <option value="Excellent Adamantine Pants"></option>
+                                    <option value="Excellent Adamantine Gloves"></option>
+                                    <option value="Excellent Adamantine Boots"></option>
+
+                                    <!-- Valiant (DL) -->
+                                    <option value="Excellent Valiant Helm"></option>
+                                    <option value="Excellent Valiant Armor"></option>
+                                    <option value="Excellent Valiant Pants"></option>
+                                    <option value="Excellent Valiant Gloves"></option>
+                                    <option value="Excellent Valiant Boots"></option>
+
+                                    <!-- Glorious (DL) -->
+                                    <option value="Excellent Glorious Helm"></option>
+                                    <option value="Excellent Glorious Armor"></option>
+                                    <option value="Excellent Glorious Pants"></option>
+                                    <option value="Excellent Glorious Gloves"></option>
+                                    <option value="Excellent Glorious Boots"></option>
+
+                                    <!-- ARMAS Y ESCUDOS -->
+                                    <option value="Excellent Platina Staff"></option>
+                                    <option value="Excellent Kundun Staff"></option>
+                                    <option value="Excellent Dark Soul Staff"></option>
+                                    <option value="Excellent Dragon Soul Staff"></option>
+                                    <option value="Excellent Grand Soul Staff"></option>
+                                    <option value="Excellent Knight Blade"></option>
+                                    <option value="Excellent Sword of Destruction"></option>
+                                    <option value="Excellent Dark Reign Blade"></option>
+                                    <option value="Excellent Daybreak"></option>
+                                    <option value="Excellent Dragon Spear"></option>
+                                    <option value="Excellent Great Lord Scepter"></option>
+                                    <option value="Excellent Lord Scepter"></option>
+                                    <option value="Excellent Shining Scepter"></option>
+                                    <option value="Excellent Arrow Viper Bow"></option>
+                                    <option value="Excellent Albatross Bow"></option>
+                                    <option value="Excellent Celestial Bow"></option>
+                                    <option value="Excellent Dragon Shield"></option>
+                                    <option value="Excellent Grand Soul Shield"></option>
+                                    <option value="Excellent Crimson Glory Shield"></option>
+                                </datalist>
+                            </div>
+                            <button type="submit">Guardar en Base de Datos</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN RULETA -->
+                <section id="section-ruleta" class="panel-section">
+                    <div class="page-header ruleta-header">
+                        <div>
+                            <h1>Ruleta de Loteo</h1>
+                            <p class="subtitle">Sortea el ítem entre los miembros que asistieron al Boss. El ganador se registra solo en el Historial.</p>
+                        </div>
+                        <button type="button" id="btnResetRoulette" class="btn-secondary">🔄 Nueva Ruleta</button>
+                    </div>
+
+                    <div class="ruleta-grid">
+                        <div class="ruleta-left">
+                            <div class="container" style="margin-bottom: 24px;">
+                                <h2>1. Datos del sorteo</h2>
+                                <div class="form-group">
+                                    <label for="rouletteBoss">Jefe / Evento</label>
+                                    <input type="text" id="rouletteBoss" list="muBosses" placeholder="Ej: Kundun">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="rouletteItem">Ítem a sortear</label>
+                                    <input type="text" id="rouletteItem" list="muItems" placeholder="Ej: Jewel of Bless">
+                                </div>
+                            </div>
+
+                            <div class="container">
+                                <h2>2. Participantes</h2>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Agregar participante</label>
+                                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                        <input type="text" id="participantName" placeholder="Nombre del PJ" style="flex:2; min-width:140px;">
+                                        <select id="participantClass" style="flex:1; min-width:140px;">
+                                            <option value="">Clase (opcional)</option>
+                                            <option value="Dark Wizard (SM)">Dark Wizard (SM)</option>
+                                            <option value="Dark Knight (BK)">Dark Knight (BK)</option>
+                                            <option value="Fairy Elf (ME)">Fairy Elf (ME)</option>
+                                            <option value="Magic Gladiator (MG)">Magic Gladiator (MG)</option>
+                                            <option value="Dark Lord (DL)">Dark Lord (DL)</option>
+                                            <option value="Summoner (SU)">Summoner (SU)</option>
+                                        </select>
+                                        <button type="button" id="btnAddParticipant" style="width:auto; white-space:nowrap;">+ Agregar</button>
+                                    </div>
+                                </div>
+                                <div id="participantList" class="participant-list"></div>
+                                <p id="noParticipants" class="no-participants">Todavía no agregas participantes.</p>
+                            </div>
+                        </div>
+
+                        <div class="ruleta-right">
+                            <div class="container" style="text-align:center;">
+                                <h2>3. Girar</h2>
+                                <div class="wheel-wrap">
+                                    <div class="wheel-pointer"></div>
+                                    <canvas id="wheelCanvas" width="380" height="380"></canvas>
+                                </div>
+                                <button type="button" id="btnSpin" style="max-width:280px; margin:20px auto 0;">🎡 Girar Ruleta</button>
+                                <div id="rouletteResult" class="roulette-result" hidden></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN HISTORIAL -->
+                <section id="section-historial" class="panel-section">
+                    <div class="page-header">
+                        <h1>Historial de Progresión de Miembros</h1>
+                        <p class="subtitle">Registro compartido de todo lo que se ha ganado en los Boss del clan.</p>
+                    </div>
+                    <div class="container">
+                        <div id="pendingBanner" class="pending-banner" hidden>
+                            <span>⚠ Hay <strong id="pendingBannerCount">0</strong> registro(s) que no se pudieron guardar en Google Sheets.</span>
+                        </div>
+                        <div class="table-actions">
+                            <h2>Registros</h2>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <button type="button" id="btnRetryPending" class="btn-retry-all" hidden>🔄 Reintentar pendientes (<span class="count">0</span>)</button>
+                                <button type="button" class="btn-export" onclick="exportToCSV()">💾 Exportar a Excel (CSV)</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Personaje (PJ)</th>
+                                        <th>Clase</th>
+                                        <th>Jefe / Evento</th>
+                                        <th>Ítem / Recompensa</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lootTableBody">
+                                    <tr id="noDataRow"><td colspan="6" class="no-data">No hay registros cargados aún.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN GUÍA DE BOSSES -->
+                <section id="section-guia" class="panel-section">
+                    <div class="page-header">
+                        <h1>Guía de Invasiones, Bosses &amp; Eventos</h1>
+                        <p class="subtitle">MU-SHILAND — ubicaciones y recompensas de referencia rápida.</p>
+                    </div>
+
+                    <div class="container guide-block">
+                        <h2 style="color:#b8b6ad; border-bottom-color:#b8b6ad;">🐲 Minibosses e Invasiones</h2>
+                        <div class="guide-grid">
+                            <div class="guide-card" style="border-left-color:#b8b6ad;">
+                                <p class="guide-title">🧙 Magos Blancos</p>
+                                <div class="guide-row">Ubicación: <strong>Noria, Lorencia o Devias</strong></div>
+                                <div class="guide-row">Cantidad: <strong>30</strong></div>
+                                <div class="guide-row">Recompensa: <strong>2 Joyas (Bless, Soul o Chaos - Random)</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#b8b6ad;">
+                                <p class="guide-title">🐉 Red Dragon</p>
+                                <div class="guide-row">Ubicación: <strong>Noria, Lorencia o Devias</strong></div>
+                                <div class="guide-row">Cantidad: <strong>3</strong></div>
+                                <div class="guide-row">Recompensa: <strong>Anillos y Pendientes</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#b8b6ad;">
+                                <p class="guide-title">🎉 New Year Gem</p>
+                                <div class="guide-row">Ubicación: <strong>Rakion</strong></div>
+                                <div class="guide-row">Cantidad: <strong>30</strong></div>
+                                <div class="guide-row">Recompensa: <strong>GEM</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#b8b6ad;">
+                                <p class="guide-title">🐇 Rabbits</p>
+                                <div class="guide-row">Ubicación: <strong>Elbeland</strong></div>
+                                <div class="guide-row">Cantidad: <strong>30</strong></div>
+                                <div class="guide-row">Recompensa: <strong>2 Joyas (Bless, Soul o Chaos - Random)</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#b8b6ad;">
+                                <p class="guide-title">☀️ Summer Gem</p>
+                                <div class="guide-row">Ubicación: <strong>Atlans</strong></div>
+                                <div class="guide-row">Cantidad: <strong>30</strong></div>
+                                <div class="guide-row">Recompensa: <strong>GEM</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container guide-block">
+                        <h2 style="color:#c9973f; border-bottom-color:#c9973f;">👑 Bosses Principales</h2>
+                        <div class="guide-grid">
+                            <div class="guide-card" style="border-left-color:#c9973f;">
+                                <p class="guide-title">🕸️ Selupan</p>
+                                <div class="guide-row">Ubicación: <strong>Rakion</strong></div>
+                                <div class="guide-row">Cantidad: <strong>1</strong></div>
+                                <div class="guide-row">Recompensa: <strong>Armas S1 FULL+0</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#c9973f;">
+                                <p class="guide-title">👁️ Kundun</p>
+                                <div class="guide-row">Ubicación: <strong>Kalima 7</strong></div>
+                                <div class="guide-row">Cantidad: <strong>1</strong></div>
+                                <div class="guide-row">Recompensa: <strong>Set S1 FULL+0</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#c9973f;">
+                                <p class="guide-title">🐍 Medusa</p>
+                                <div class="guide-row">Ubicación: <strong>Swamp of Peace</strong></div>
+                                <div class="guide-row">Cantidad: <strong>1</strong></div>
+                                <div class="guide-row">Recompensa: <strong>Ítem +11 Full de Caja +5</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#c9973f;">
+                                <p class="guide-title">🔥 Erohim</p>
+                                <div class="guide-row">Ubicación: <strong>Icarus</strong></div>
+                                <div class="guide-row">Cantidad: <strong>1</strong></div>
+                                <div class="guide-row">Recompensa: <strong>Ítem +11 Full de Caja +5</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container guide-block">
+                        <h2 style="color:#8a4a35; border-bottom-color:#8a4a35;">🏰 Recompensas de Eventos</h2>
+                        <div class="guide-grid">
+                            <div class="guide-card" style="border-left-color:#8a4a35;">
+                                <p class="guide-title">🏯 Chaos Castle</p>
+                                <div class="guide-row">Recompensa: <strong>1 Ítem Acc</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#8a4a35;">
+                                <p class="guide-title">🩸 Blood Castle</p>
+                                <div class="guide-row">Recompensa: <strong>1 Caja +5</strong></div>
+                            </div>
+                            <div class="guide-card" style="border-left-color:#8a4a35;">
+                                <p class="guide-title">🌀 Devil Square</p>
+                                <div class="guide-row">Recompensa: <strong>3 Cajas +5</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN REGLAMENTO -->
+                <section id="section-reglamento" class="panel-section">
+                    <div class="page-header">
+                        <h1>Reglamento Oficial de Loteo</h1>
+                        <p class="subtitle">Para garantizar un crecimiento justo, transparente y equitativo dentro de la comunidad.</p>
+                    </div>
+                    <div class="container">
+                        <div class="rule-section">
+                            <p>1. Sistema de Loteo por Ruleta y Prioridad de Clase</p>
+                            <div class="rule-subtext">Los ítems que caigan del Boss pertenecerán exclusivamente a quienes asistieron al evento. Su distribución se hará mediante dados/ruleta bajo los siguientes criterios:</div>
+                            <ul>
+                                <li><span class="highlight">Filtro por Clase:</span> Si cae un ítem específico para una clase (por ejemplo, un Staff o un escudo de Mago), solo los Magos que participaron activamente en el Boss entrarán en la ruleta por ese ítem.</li>
+                                <li>El mismo principio aplica para las demás clases (BK, ELF, DL, SUM, etc.).</li>
+                            </ul>
+                        </div>
+
+                        <div class="rule-section">
+                            <p>2. Repartición de WCoin (WC)</p>
+                            <div class="rule-subtext">Las monedas virtuales o premios en WC que otorgue el Boss se dividirán de forma equitativa:</div>
+                            <ul>
+                                <li><span class="highlight">División Justa:</span> Si el Boss suelta una recompensa fija (por ejemplo, 2,000 WC), el monto total se repartirá en partes iguales entre todos los miembros que asistieron y apoyaron en el Boss.</li>
+                            </ul>
+                        </div>
+
+                        <div class="rule-section">
+                            <p>3. Política de Personaje Principal (Main)</p>
+                            <div class="rule-subtext">Buscamos el progreso balanceado del clan, por lo que nos enfocaremos en un solo personaje por jugador:</div>
+                            <ul>
+                                <li>Solo un personaje (<span class="highlight">1 PJ Main</span>) recibirá soporte del clan. No se lotearán ítems del Boss para cuentas secundarias (alts o golds).</li>
+                                <li><span class="highlight">Donaciones/Pay to Win:</span> Si un jugador decide armar su personaje principal o sus secundarios de forma independiente mediante donaciones al servidor, es su decisión y presupuesto personal. Las donaciones no te excluyen de los loteos del clan, pero tampoco te dan prioridad sobre los demás.</li>
+                            </ul>
+                        </div>
+
+                        <div class="rule-section">
+                            <p>4. Registro y Seguimiento de Progresión</p>
+                            <div class="rule-subtext">Para mantener la transparencia y asegurar que todos nos equipemos por igual:</div>
+                            <ul>
+                                <li><span class="highlight">Base de Datos del Clan:</span> Cada ítem ganado en un Boss se registrará obligatoriamente en una base de datos interna.</li>
+                                <li><span class="highlight">Monitoreo:</span> Esto nos servirá para hacer un seguimiento real de la progresión de cada player y asegurar que los ítems vayan a quienes realmente los necesitan para mejorar el rendimiento del equipo en los próximos desafíos.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Pega aquí la URL de tu implementación de Google Apps Script (termina en /exec).
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzX2pNbBJH8eN_f99KTvGBIpk51hv9HB1ooHKU_I6smVLcbWV8ukeIHHJDJYg5fZHEi3w/exec";
+        const PENDING_KEY = 'muGuildPendingRecords';
+
+        const lootForm = document.getElementById('lootForm');
+        const tableBody = document.getElementById('lootTableBody');
+        const noDataRow = document.getElementById('noDataRow');
+        const submitButton = lootForm.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+        const retryAllButton = document.getElementById('btnRetryPending');
+        const pendingBanner = document.getElementById('pendingBanner');
+        const pendingBannerCount = document.getElementById('pendingBannerCount');
+        const navPendingBadge = document.getElementById('navPendingBadge');
+
+        let records = [];
+
+        /* ---------- Navegación de secciones ---------- */
+        const navItems = document.querySelectorAll('.nav-item[data-section]');
+        const sections = document.querySelectorAll('.panel-section');
+        function showSection(name) {
+            navItems.forEach(b => b.classList.toggle('active', b.dataset.section === name));
+            sections.forEach(s => s.classList.toggle('active', s.id === 'section-' + name));
+        }
+        navItems.forEach(btn => btn.addEventListener('click', () => showSection(btn.dataset.section)));
+        showSection('registro');
+
+        /* ---------- Utilidades ---------- */
+        function isScriptConfigured() {
+            return SCRIPT_URL && !SCRIPT_URL.includes('PEGA_AQUI');
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str ?? '';
+            return div.innerHTML;
+        }
+
+        function makeId() {
+            return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        }
+
+        function loadPendingFromStorage() {
+            try {
+                return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+            } catch {
+                return [];
+            }
+        }
+
+        function persistPending() {
+            try {
+                localStorage.setItem(PENDING_KEY, JSON.stringify(records.filter(r => !r.synced)));
+            } catch (err) {
+                console.error('No se pudo guardar en localStorage:', err);
+            }
+        }
+
+        /* ---------- Render ---------- */
+        function renderRow(record) {
+            const row = document.createElement('tr');
+            row.dataset.id = record.id;
+            const statusHtml = record.synced
+                ? `<span class="status-ok">✅ Guardado</span>`
+                : `<span class="status-pending">⚠ Pendiente</span><button type="button" class="btn-retry-row" data-id="${record.id}">Reintentar</button>`;
+            row.innerHTML = `
+                <td>${escapeHtml(record.date)}</td>
+                <td style="font-weight:bold;">${escapeHtml(record.name)}</td>
+                <td>${escapeHtml(record.pClass)}</td>
+                <td>${escapeHtml(record.boss)}</td>
+                <td style="color: var(--accent-color); font-weight:500;">${escapeHtml(record.item)}</td>
+                <td>${statusHtml}</td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+        function renderAll() {
+            tableBody.innerHTML = '';
+            if (records.length === 0) {
+                tableBody.appendChild(noDataRow);
+            } else {
+                records.forEach(renderRow);
+            }
+            updatePendingUI();
+        }
+
+        function updatePendingUI() {
+            const pendingCount = records.filter(r => !r.synced).length;
+            retryAllButton.hidden = pendingCount === 0;
+            retryAllButton.querySelector('.count').textContent = pendingCount;
+            navPendingBadge.hidden = pendingCount === 0;
+            navPendingBadge.textContent = pendingCount;
+            pendingBanner.hidden = pendingCount === 0;
+            pendingBannerCount.textContent = pendingCount;
+        }
+
+        /* ---------- Comunicación con Google Sheets ---------- */
+        async function fetchRemoteRecords() {
+            const res = await fetch(SCRIPT_URL);
+            const data = await res.json();
+            return data.map(r => ({ ...r, id: makeId(), synced: true }));
+        }
+
+        async function verifyRecordSaved(record) {
+            const remote = await fetchRemoteRecords();
+            return remote.some(r =>
+                r.name === record.name &&
+                r.pClass === record.pClass &&
+                r.boss === record.boss &&
+                r.item === record.item
+            );
+        }
+
+        async function saveRecord(record) {
+            const formData = new FormData();
+            formData.append('date', record.date);
+            formData.append('name', record.name);
+            formData.append('pClass', record.pClass);
+            formData.append('boss', record.boss);
+            formData.append('item', record.item);
+            // Google Apps Script no manda cabeceras CORS válidas para el origen "null" (archivo
+            // abierto con file://) en respuestas POST, así que no podemos leer la respuesta directo.
+            // Se manda en modo no-cors (igual llega y se guarda) y se confirma con una lectura GET aparte.
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
+            const saved = await verifyRecordSaved(record);
+            if (!saved) throw new Error('No se pudo confirmar el guardado en Google Sheets');
+        }
+
+        async function attemptSync(record) {
+            if (!isScriptConfigured()) return;
+            const retryBtn = tableBody.querySelector(`.btn-retry-row[data-id="${record.id}"]`);
+            if (retryBtn) { retryBtn.disabled = true; retryBtn.textContent = 'Enviando...'; }
+            try {
+                await saveRecord(record);
+                record.synced = true;
+            } catch (err) {
+                record.synced = false;
+                console.error('No se pudo sincronizar el registro:', err);
+            }
+            persistPending();
+            renderAll();
+        }
+
+        async function retryAllPending() {
+            for (const record of records.filter(r => !r.synced)) {
+                await attemptSync(record);
+            }
+        }
+        retryAllButton.addEventListener('click', retryAllPending);
+
+        tableBody.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-retry-row');
+            if (!btn) return;
+            const record = records.find(r => r.id === btn.dataset.id);
+            if (record) attemptSync(record);
+        });
+
+        async function loadRecords() {
+            let remoteRecords = [];
+            if (isScriptConfigured()) {
+                try {
+                    remoteRecords = await fetchRemoteRecords();
+                } catch (err) {
+                    console.error('No se pudo cargar el historial desde Google Sheets:', err);
+                }
+            }
+            const pending = loadPendingFromStorage();
+            records = [...pending, ...remoteRecords];
+            renderAll();
+            if (pending.length && isScriptConfigured()) {
+                retryAllPending();
+            }
+        }
+
+        /* ---------- Formulario ---------- */
+        lootForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const date = new Date().toLocaleDateString();
+            const name = document.getElementById('playerName').value.trim();
+            const pClass = document.getElementById('playerClass').value;
+            const boss = document.getElementById('bossName').value.trim();
+            const item = document.getElementById('itemName').value.trim();
+
+            const newRecord = { id: makeId(), date, name, pClass, boss, item, synced: !isScriptConfigured() };
+            records.unshift(newRecord);
+            renderAll();
+            lootForm.reset();
+
+            if (isScriptConfigured()) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Guardando...';
+                await attemptSync(newRecord);
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+            } else {
+                persistPending();
+            }
+        });
+
+        loadRecords();
+
+        function exportToCSV() {
+            if (records.length === 0) {
+                alert("No hay datos para exportar.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,﻿";
+            csvContent += "Fecha,Personaje,Clase,Boss,Item Ganado,Estado\n";
+
+            records.forEach(r => {
+                const estado = r.synced ? 'Guardado' : 'Pendiente';
+                csvContent += `"${r.date}","${r.name}","${r.pClass}","${r.boss}","${r.item}","${estado}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Progreso_Loot_Guild.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /* ---------- Ruleta ---------- */
+        let rouletteParticipants = [];
+        let wheelRotation = 0;
+
+        const participantNameInput = document.getElementById('participantName');
+        const participantClassSelect = document.getElementById('participantClass');
+        const participantListEl = document.getElementById('participantList');
+        const noParticipantsEl = document.getElementById('noParticipants');
+        const btnAddParticipant = document.getElementById('btnAddParticipant');
+        const btnSpin = document.getElementById('btnSpin');
+        const wheelCanvas = document.getElementById('wheelCanvas');
+        const wheelCtx = wheelCanvas.getContext('2d');
+        const rouletteResultEl = document.getElementById('rouletteResult');
+        const rouletteBossInput = document.getElementById('rouletteBoss');
+        const rouletteItemInput = document.getElementById('rouletteItem');
+
+        const WHEEL_COLORS = ['#c9973f', '#2b2b2b'];
+
+        function addParticipant() {
+            const name = participantNameInput.value.trim();
+            if (!name) return;
+            const pClass = participantClassSelect.value;
+            rouletteParticipants.push({ id: makeId(), name, pClass });
+            participantNameInput.value = '';
+            participantNameInput.focus();
+            renderParticipants();
+        }
+
+        function removeParticipant(id) {
+            rouletteParticipants = rouletteParticipants.filter(p => p.id !== id);
+            renderParticipants();
+        }
+
+        function renderParticipants() {
+            participantListEl.innerHTML = '';
+            noParticipantsEl.hidden = rouletteParticipants.length > 0;
+            rouletteParticipants.forEach(p => {
+                const chip = document.createElement('div');
+                chip.className = 'participant-chip';
+                chip.innerHTML = `
+                    <span>${escapeHtml(p.name)}</span>
+                    ${p.pClass ? `<span class="chip-class">${escapeHtml(p.pClass)}</span>` : ''}
+                    <button type="button" data-id="${p.id}" title="Quitar">✕</button>
+                `;
+                participantListEl.appendChild(chip);
+            });
+            wheelRotation = 0;
+            wheelCanvas.style.transition = 'none';
+            wheelCanvas.style.transform = 'rotate(0deg)';
+            rouletteResultEl.hidden = true;
+            drawWheel();
+        }
+
+        btnAddParticipant.addEventListener('click', addParticipant);
+        participantNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); addParticipant(); }
+        });
+        participantListEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-id]');
+            if (btn) removeParticipant(btn.dataset.id);
+        });
+
+        function drawWheel() {
+            const size = wheelCanvas.width;
+            const center = size / 2;
+            const radius = center - 6;
+            wheelCtx.clearRect(0, 0, size, size);
+
+            const n = rouletteParticipants.length;
+            if (n === 0) {
+                wheelCtx.beginPath();
+                wheelCtx.arc(center, center, radius, 0, Math.PI * 2);
+                wheelCtx.fillStyle = '#161616';
+                wheelCtx.fill();
+                wheelCtx.fillStyle = '#8f8f8a';
+                wheelCtx.font = '14px Oswald, sans-serif';
+                wheelCtx.textAlign = 'center';
+                wheelCtx.fillText('Agrega participantes', center, center);
+                return;
+            }
+
+            const anglePer = (Math.PI * 2) / n;
+            rouletteParticipants.forEach((p, i) => {
+                const start = i * anglePer - Math.PI / 2;
+                const end = start + anglePer;
+                const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
+
+                wheelCtx.beginPath();
+                wheelCtx.moveTo(center, center);
+                wheelCtx.arc(center, center, radius, start, end);
+                wheelCtx.closePath();
+                wheelCtx.fillStyle = color;
+                wheelCtx.fill();
+                wheelCtx.strokeStyle = '#0a0a0a';
+                wheelCtx.lineWidth = 2;
+                wheelCtx.stroke();
+
+                wheelCtx.save();
+                wheelCtx.translate(center, center);
+                wheelCtx.rotate(start + anglePer / 2);
+                wheelCtx.textAlign = 'right';
+                wheelCtx.textBaseline = 'middle';
+                wheelCtx.fillStyle = color === '#c9973f' ? '#0a0a0a' : '#f2f0ea';
+                const fontSize = n <= 3 ? 24 : n <= 5 ? 20 : n <= 8 ? 16 : n <= 12 ? 13 : 11;
+                const maxChars = n <= 3 ? 20 : n <= 5 ? 16 : n <= 8 ? 13 : n <= 12 ? 10 : 8;
+                wheelCtx.font = `bold ${fontSize}px Oswald, sans-serif`;
+                const label = p.name.length > maxChars ? p.name.slice(0, maxChars - 1) + '…' : p.name;
+                wheelCtx.fillText(label, radius - 14, 0);
+                wheelCtx.restore();
+            });
+        }
+
+        function spinWheel() {
+            const n = rouletteParticipants.length;
+            if (n < 2) {
+                alert('Agrega al menos 2 participantes para girar la ruleta.');
+                return;
+            }
+            const boss = rouletteBossInput.value.trim();
+            const item = rouletteItemInput.value.trim();
+            if (!boss || !item) {
+                alert('Completa el Jefe/Evento y el Ítem a sortear antes de girar.');
+                return;
+            }
+
+            btnSpin.disabled = true;
+            rouletteResultEl.hidden = true;
+
+            const winnerIndex = Math.floor(Math.random() * n);
+            const anglePerDeg = 360 / n;
+            const segmentCenterDeg = winnerIndex * anglePerDeg + anglePerDeg / 2;
+            const fullSpins = 5 + Math.floor(Math.random() * 3);
+
+            const currentMod = ((wheelRotation % 360) + 360) % 360;
+            const neededFinalMod = (360 - segmentCenterDeg) % 360;
+            let delta = neededFinalMod - currentMod;
+            if (delta < 0) delta += 360;
+
+            wheelRotation += fullSpins * 360 + delta;
+            wheelCanvas.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.3, 1)';
+            wheelCanvas.style.transform = `rotate(${wheelRotation}deg)`;
+
+            wheelCanvas.addEventListener('transitionend', function onEnd() {
+                wheelCanvas.removeEventListener('transitionend', onEnd);
+                announceWinner(rouletteParticipants[winnerIndex], boss, item);
+                btnSpin.disabled = false;
+            }, { once: true });
+        }
+
+        async function announceWinner(winner, boss, item) {
+            rouletteResultEl.hidden = false;
+            rouletteResultEl.textContent = `🏆 Ganador: ${winner.name}${winner.pClass ? ' (' + winner.pClass + ')' : ''}`;
+
+            const date = new Date().toLocaleDateString();
+            const newRecord = {
+                id: makeId(),
+                date,
+                name: winner.name,
+                pClass: winner.pClass,
+                boss,
+                item,
+                synced: !isScriptConfigured()
+            };
+            records.unshift(newRecord);
+            renderAll();
+
+            if (isScriptConfigured()) {
+                await attemptSync(newRecord);
+            } else {
+                persistPending();
+            }
+        }
+
+        function resetRoulette() {
+            rouletteParticipants = [];
+            rouletteBossInput.value = '';
+            rouletteItemInput.value = '';
+            participantNameInput.value = '';
+            participantClassSelect.value = '';
+            btnSpin.disabled = false;
+            renderParticipants();
+        }
+
+        btnSpin.addEventListener('click', spinWheel);
+        document.getElementById('btnResetRoulette').addEventListener('click', resetRoulette);
+        drawWheel();
+    </script>
+</body>
+</html>
+
