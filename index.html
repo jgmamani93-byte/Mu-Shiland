@@ -470,7 +470,9 @@
                         <form id="lootForm" autocomplete="off">
                             <div class="form-group">
                                 <label for="playerName">Nombre del Personaje (PJ Main)</label>
-                                <input type="text" id="playerName" placeholder="Ej: DarkKnight99" required>
+                                <select id="playerName" required>
+                                    <option value="">Selecciona un jugador registrado...</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="playerClass">Clase del PJ</label>
@@ -672,7 +674,9 @@
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label>Agregar participante</label>
                                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                        <input type="text" id="participantName" placeholder="Nombre del PJ" style="flex:2; min-width:140px;">
+                                        <select id="participantName" style="flex:2; min-width:140px;">
+                                            <option value="">Selecciona un jugador...</option>
+                                        </select>
                                         <select id="participantClass" style="flex:1; min-width:140px;">
                                             <option value="">Clase (opcional)</option>
                                             <option value="Dark Wizard (SM)">Dark Wizard (SM)</option>
@@ -1580,6 +1584,40 @@
             });
         }
 
+        let registeredPlayers = [];
+
+        function populatePlayerSelects() {
+            const options = '<option value="">Selecciona un jugador registrado...</option>' +
+                registeredPlayers.map(pl => `<option value="${escapeHtml(pl.username)}">${escapeHtml(pl.username)}</option>`).join('');
+
+            const playerNameSelect = document.getElementById('playerName');
+            if (playerNameSelect) playerNameSelect.innerHTML = options;
+
+            const participantSelect = document.getElementById('participantName');
+            if (participantSelect) participantSelect.innerHTML = options.replace('un jugador registrado...', 'un jugador...');
+        }
+
+        async function loadRegisteredPlayers() {
+            if (!canManageLoot()) {
+                registeredPlayers = [];
+                populatePlayerSelects();
+                return;
+            }
+            const result = await postToScript({ action: 'listPlayers', token: currentUser.token });
+            registeredPlayers = (result.ok === true) ? result.players : [];
+            populatePlayerSelects();
+        }
+
+        document.getElementById('playerName').addEventListener('change', function () {
+            const selected = registeredPlayers.find(pl => pl.username === this.value);
+            if (selected && selected.pClass) document.getElementById('playerClass').value = selected.pClass;
+        });
+
+        participantNameInput.addEventListener('change', function () {
+            const selected = registeredPlayers.find(pl => pl.username === this.value);
+            if (selected && selected.pClass) participantClassSelect.value = selected.pClass;
+        });
+
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const username = document.getElementById('loginUsername').value.trim();
@@ -1604,6 +1642,7 @@
             updateGates();
             loadMyProgress();
             loadRecords();
+            loadRegisteredPlayers();
         });
 
         document.getElementById('registerForm').addEventListener('submit', async function (e) {
@@ -1651,6 +1690,8 @@
             saveSession();
             updateGates();
             loadRecords();
+            registeredPlayers = [];
+            populatePlayerSelects();
         });
 
         document.getElementById('btnRefreshProgress').addEventListener('click', loadMyProgress);
@@ -1684,7 +1725,10 @@
         });
 
         updateGates();
-        if (currentUser) loadMyProgress();
+        if (currentUser) {
+            loadMyProgress();
+            loadRegisteredPlayers();
+        }
     </script>
 </body>
 </html>
