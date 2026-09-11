@@ -476,6 +476,7 @@
                             <div class="form-group">
                                 <label for="itemName">Ítem Ganado o Recompensa (Tiene Autocompletado)</label>
                                 <input type="text" id="itemName" list="muItems" placeholder="Escribe para buscar ítem o set..." required>
+                                <small id="itemClassHint" class="rule-subtext" style="display:block; margin-top:6px;"></small>
                                 <datalist id="muItems">
                                     <option value="2,000 WCoin (WC)"></option>
                                     <option value="1,000 WCoin (WC)"></option>
@@ -637,6 +638,7 @@
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label for="rouletteItem">Ítem a sortear</label>
                                     <input type="text" id="rouletteItem" list="muItems" placeholder="Ej: Jewel of Bless">
+                                    <small id="rouletteItemClassHint" class="rule-subtext" style="display:block; margin-top:6px;"></small>
                                 </div>
                             </div>
 
@@ -1056,6 +1058,69 @@
 
         loadRecords();
 
+        /* ---------- Relación Ítem -> Clase ---------- */
+        const CLASS_SM = 'Dark Wizard (SM)';
+        const CLASS_BK = 'Dark Knight (BK)';
+        const CLASS_ELF = 'Fairy Elf (ME)';
+        const CLASS_MG = 'Magic Gladiator (MG)';
+        const CLASS_DL = 'Dark Lord (DL)';
+
+        const ITEM_CLASS_MAP = {};
+        function addSet(setName, classes) {
+            ['Helm', 'Armor', 'Pants', 'Gloves', 'Boots'].forEach(piece => {
+                ITEM_CLASS_MAP[`Excellent ${setName} ${piece}`] = classes;
+            });
+        }
+        function addItem(itemName, classes) {
+            ITEM_CLASS_MAP[itemName] = classes;
+        }
+
+        // Sets de armadura (según a qué clase pertenece cada set)
+        addSet('Great Dragon', [CLASS_BK]);
+        addSet('Dark Phoenix', [CLASS_BK]);
+        addSet('Black Dragon', [CLASS_BK]);
+        addSet('Ashcrow', [CLASS_BK, CLASS_MG]);
+        addSet('Dark Soul', [CLASS_SM]);
+        addSet('Grand Soul', [CLASS_SM]);
+        addSet('Legendary', [CLASS_SM]);
+        addSet('Eclipse', [CLASS_SM, CLASS_MG]);
+        addSet('Divine', [CLASS_ELF]);
+        addSet('Guardian', [CLASS_ELF]);
+        addSet('Iris', [CLASS_ELF]);
+        addSet('Dark Steel', [CLASS_DL]);
+        addSet('Adamantine', [CLASS_DL]);
+        addSet('Valiant', [CLASS_DL]);
+        addSet('Glorious', [CLASS_DL]);
+
+        // Armas y accesorios exclusivos de una clase
+        ['Excellent Platina Staff', 'Excellent Kundun Staff', 'Excellent Dark Soul Staff', 'Excellent Dragon Soul Staff', 'Excellent Grand Soul Staff']
+            .forEach(item => addItem(item, [CLASS_SM]));
+        ['Excellent Knight Blade', 'Excellent Sword of Destruction', 'Excellent Dark Reign Blade', 'Excellent Daybreak', 'Excellent Dragon Spear']
+            .forEach(item => addItem(item, [CLASS_BK]));
+        ['Excellent Great Lord Scepter', 'Excellent Lord Scepter', 'Excellent Shining Scepter']
+            .forEach(item => addItem(item, [CLASS_DL]));
+        ['Excellent Arrow Viper Bow', 'Excellent Albatross Bow', 'Excellent Celestial Bow']
+            .forEach(item => addItem(item, [CLASS_ELF]));
+        // Escudos y joyas: usables por varias clases o por todos, no se autocompleta clase.
+
+        function updateClassHint(itemValue, hintEl, classSelectEl, allowAutoSelect) {
+            const classes = ITEM_CLASS_MAP[itemValue.trim()];
+            if (!classes) {
+                hintEl.textContent = '';
+                return;
+            }
+            if (classes.length === 1) {
+                hintEl.textContent = `➜ Este ítem es de: ${classes[0]}`;
+                if (allowAutoSelect && classSelectEl) classSelectEl.value = classes[0];
+            } else {
+                hintEl.textContent = `➜ Este ítem es para: ${classes.join(' o ')}`;
+            }
+        }
+
+        document.getElementById('itemName').addEventListener('input', function () {
+            updateClassHint(this.value, document.getElementById('itemClassHint'), document.getElementById('playerClass'), true);
+        });
+
         function exportToCSV() {
             if (records.length === 0) {
                 alert("No hay datos para exportar.");
@@ -1264,6 +1329,11 @@
 
         btnSpin.addEventListener('click', spinWheel);
         document.getElementById('btnResetRoulette').addEventListener('click', resetRoulette);
+
+        rouletteItemInput.addEventListener('input', function () {
+            updateClassHint(this.value, document.getElementById('rouletteItemClassHint'), participantClassSelect, true);
+        });
+
         drawWheel();
     </script>
 </body>
