@@ -440,6 +440,7 @@
             <div class="sidebar-brand">Arctic Monkeys<small>MU Online Guild</small></div>
             <nav>
                 <button type="button" class="nav-item" data-section="registro">📝 Registrar Loot</button>
+                <button type="button" class="nav-item" data-section="baul">🎒 Baúl</button>
                 <button type="button" class="nav-item" data-section="ruleta">🎡 Ruleta</button>
                 <button type="button" class="nav-item" data-section="historial">
                     <span>📊 Historial</span>
@@ -637,6 +638,56 @@
                             </div>
                             <button type="submit">Guardar en Base de Datos</button>
                         </form>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN BAÚL -->
+                <section id="section-baul" class="panel-section">
+                    <div class="page-header">
+                        <h1>Baúl del Clan</h1>
+                        <p class="subtitle">Ítems guardados en el baúl que todavía no se han asignado a ningún jugador.</p>
+                    </div>
+                    <div id="baulLocked" class="locked-panel" hidden>
+                        <div class="lock-icon">🔒</div>
+                        <p>Necesitas una cuenta registrada para ver el baúl.<br>Regístrate o inicia sesión en <a href="#" data-goto="cuenta">Mi Cuenta</a>.</p>
+                    </div>
+                    <div id="baulGate" hidden>
+                        <div id="vaultFormContainer" class="container" style="margin-bottom:24px;" hidden>
+                            <h2>Agregar Ítem al Baúl</h2>
+                            <form id="vaultForm" autocomplete="off">
+                                <div class="form-group">
+                                    <label for="vaultBossName">Jefe / Evento</label>
+                                    <input type="text" id="vaultBossName" list="muBosses" placeholder="Ej: Escribe para buscar Boss..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="vaultItemName">Ítem Guardado</label>
+                                    <input type="text" id="vaultItemName" list="muItems" placeholder="Escribe para buscar ítem o set..." required>
+                                </div>
+                                <button type="submit">📦 Guardar en Baúl</button>
+                            </form>
+                        </div>
+
+                        <div class="container">
+                            <div class="table-actions">
+                                <h2>Ítems Disponibles</h2>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Jefe / Evento</th>
+                                            <th>Ítem</th>
+                                            <th>Agregado por</th>
+                                            <th id="vaultActionsHeader" hidden>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vaultTableBody">
+                                        <tr id="vaultNoDataRow"><td colspan="5" class="no-data">No hay ítems en el baúl.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -1276,6 +1327,113 @@
 
         loadRecords();
 
+        /* ---------- Baúl del clan ---------- */
+        const vaultForm = document.getElementById('vaultForm');
+        const vaultTableBody = document.getElementById('vaultTableBody');
+        const vaultNoDataRow = document.getElementById('vaultNoDataRow');
+        const vaultActionsHeader = document.getElementById('vaultActionsHeader');
+        let vaultItems = [];
+
+        function renderVaultRow(item) {
+            const row = document.createElement('tr');
+            row.dataset.id = item.id;
+            let actionsHtml = '';
+            if (canManageLoot()) {
+                const options = '<option value="">Asignar a...</option>' +
+                    registeredPlayers.map(pl => `<option value="${escapeHtml(pl.username)}">${escapeHtml(pl.username)}</option>`).join('');
+                actionsHtml = `
+                    <td>
+                        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                            <select class="vault-assign-select" style="width:auto;">${options}</select>
+                            <button type="button" class="btn-secondary vault-assign-btn" style="width:auto; padding:6px 10px;">✅ Asignar</button>
+                            <button type="button" class="btn-retry-row vault-delete-btn" style="margin-left:0;">🗑️</button>
+                        </div>
+                    </td>`;
+            }
+            row.innerHTML = `
+                <td>${escapeHtml(item.date)}</td>
+                <td>${escapeHtml(item.boss)}</td>
+                <td style="color: var(--accent-color); font-weight:500;">${escapeHtml(item.item)}</td>
+                <td>${escapeHtml(item.addedBy)}</td>
+                ${actionsHtml}
+            `;
+            vaultTableBody.appendChild(row);
+        }
+
+        function renderVaultAll() {
+            vaultTableBody.innerHTML = '';
+            vaultActionsHeader.hidden = !canManageLoot();
+            if (vaultItems.length === 0) {
+                vaultTableBody.appendChild(vaultNoDataRow);
+            } else {
+                vaultItems.forEach(renderVaultRow);
+            }
+        }
+
+        async function loadVaultItems() {
+            if (!currentUser) { vaultItems = []; renderVaultAll(); return; }
+            const result = await postToScript({ action: 'listVaultItems', token: currentUser.token });
+            vaultItems = (result.ok === true) ? result.items : [];
+            renderVaultAll();
+        }
+
+        vaultForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const date = new Date().toLocaleDateString();
+            const boss = document.getElementById('vaultBossName').value.trim();
+            const item = document.getElementById('vaultItemName').value.trim();
+            const submitBtn = vaultForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            const result = await postToScript({ action: 'addVaultItem', token: currentUser.token, date, boss, item });
+            submitBtn.disabled = false;
+            if (result.ok) {
+                vaultForm.reset();
+                await loadVaultItems();
+            } else {
+                alert(result.error || 'No se pudo guardar en el baúl.');
+            }
+        });
+
+        vaultTableBody.addEventListener('click', async function (e) {
+            const row = e.target.closest('tr');
+            if (!row || !row.dataset.id) return;
+            const id = row.dataset.id;
+
+            if (e.target.classList.contains('vault-assign-btn')) {
+                const select = row.querySelector('.vault-assign-select');
+                const targetUsername = select.value;
+                if (!targetUsername) { alert('Selecciona un jugador primero.'); return; }
+                const player = registeredPlayers.find(pl => pl.username === targetUsername);
+                e.target.disabled = true;
+                const result = await postToScript({
+                    action: 'assignVaultItem',
+                    token: currentUser.token,
+                    id,
+                    targetUsername,
+                    pClass: (player && player.pClass) || ''
+                });
+                e.target.disabled = false;
+                if (result.ok) {
+                    await loadVaultItems();
+                    loadRecords();
+                } else {
+                    alert(result.error || 'No se pudo asignar el ítem.');
+                }
+            }
+
+            if (e.target.classList.contains('vault-delete-btn')) {
+                if (!confirm('¿Eliminar este ítem del baúl?')) return;
+                e.target.disabled = true;
+                const result = await postToScript({ action: 'deleteVaultItem', token: currentUser.token, id });
+                e.target.disabled = false;
+                if (result.ok) {
+                    await loadVaultItems();
+                } else {
+                    alert(result.error || 'No se pudo eliminar el ítem.');
+                }
+            }
+        });
+
         /* ---------- Relación Ítem -> Clase ---------- */
         const CLASS_SM = 'Dark Wizard (SM)';
         const CLASS_BK = 'Dark Knight (BK)';
@@ -1565,6 +1723,9 @@
             const loggedIn = !!currentUser;
             document.getElementById('historialGate').hidden = !loggedIn;
             document.getElementById('historialLocked').hidden = loggedIn;
+            document.getElementById('baulGate').hidden = !loggedIn;
+            document.getElementById('baulLocked').hidden = loggedIn;
+            document.getElementById('vaultFormContainer').hidden = !allowed;
             document.getElementById('authLoggedOut').hidden = loggedIn;
             document.getElementById('authLoggedIn').hidden = !loggedIn;
             const isAdmin = !!(currentUser && currentUser.role === 'admin');
@@ -1634,6 +1795,7 @@
             const result = await postToScript({ action: 'listPlayers', token: currentUser.token });
             registeredPlayers = (result.ok === true) ? result.players : [];
             populatePlayerSelects();
+            renderVaultAll();
         }
 
         document.getElementById('playerName').addEventListener('change', function () {
@@ -1671,6 +1833,7 @@
             loadMyProgress();
             loadRecords();
             loadRegisteredPlayers();
+            loadVaultItems();
         });
 
         document.getElementById('registerForm').addEventListener('submit', async function (e) {
@@ -1720,6 +1883,7 @@
             loadRecords();
             registeredPlayers = [];
             populatePlayerSelects();
+            loadVaultItems();
         });
 
         document.getElementById('btnRefreshProgress').addEventListener('click', loadMyProgress);
@@ -1778,6 +1942,7 @@
         if (currentUser) {
             loadMyProgress();
             loadRegisteredPlayers();
+            loadVaultItems();
         }
     </script>
 </body>

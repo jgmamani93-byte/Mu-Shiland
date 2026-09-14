@@ -1,5 +1,6 @@
 const SHEET_ID = '1woWi_Cyt1bPl2l-XJ9pHQYzVNWzNd4ngO5g0W3wqjvM';
 const USERS_SHEET_NAME = 'Usuarios';
+const VAULT_SHEET_NAME = 'Baul';
 
 function getLootSheet() {
   return SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
@@ -11,6 +12,16 @@ function getUsersSheet() {
   if (!sheet) {
     sheet = ss.insertSheet(USERS_SHEET_NAME);
     sheet.appendRow(['username', 'passwordHash', 'salt', 'role', 'pClass', 'token']);
+  }
+  return sheet;
+}
+
+function getVaultSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName(VAULT_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(VAULT_SHEET_NAME);
+    sheet.appendRow(['id', 'date', 'boss', 'item', 'addedBy']);
   }
   return sheet;
 }
@@ -37,6 +48,15 @@ function findUserByToken(sheet, token) {
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (data[i][5] === token) return { rowIndex: i + 1, row: data[i] };
+  }
+  return null;
+}
+
+function findVaultRow(sheet, id) {
+  if (!id) return null;
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === id) return { rowIndex: i + 1, row: data[i] };
   }
   return null;
 }
@@ -94,6 +114,10 @@ function doPost(e) {
     if (action === 'addLoot') return handleAddLoot(p);
     if (action === 'listPlayers') return handleListPlayers(p);
     if (action === 'resetPassword') return handleResetPassword(p);
+    if (action === 'addVaultItem') return handleAddVaultItem(p);
+    if (action === 'listVaultItems') return handleListVaultItems(p);
+    if (action === 'assignVaultItem') return handleAssignVaultItem(p);
+    if (action === 'deleteVaultItem') return handleDeleteVaultItem(p);
 
     return jsonOut({ ok: false, error: 'Acción desconocida.' });
   } catch (err) {
@@ -220,5 +244,71 @@ function handleSetRole(p) {
   if (['admin', 'officer', 'player'].indexOf(newRole) === -1) return jsonOut({ ok: false, error: 'Rol inválido.' });
 
   sheet.getRange(target.rowIndex, 4).setValue(newRole);
+  return jsonOut({ ok: true });
+}
+
+function handleAddVaultItem(p) {
+  const check = requireRole(p.token, ['admin', 'officer']);
+  if (!check.ok) return jsonOut(check);
+
+  const boss = (p.boss || '').trim();
+  const item = (p.item || '').trim();
+  if (!boss || !item) return jsonOut({ ok: false, error: 'Falta el jefe/evento o el ítem.' });
+
+  const sheet = getVaultSheet();
+  const id = Utilities.getUuid();
+  const addedBy = check.auth.row[0];
+  sheet.appendRow([id, p.date || '', boss, item, addedBy]);
+  return jsonOut({ ok: true });
+}
+
+function handleListVaultItems(p) {
+  const usersSheet = getUsersSheet();
+  const auth = findUserByToken(usersSheet, p.token);
+  if (!auth) return jsonOut({ ok: false, error: 'Sesión inválida, inicia sesión de nuevo.' });
+
+  const sheet = getVaultSheet();
+  const data = sheet.getDataRange().getValues();
+  data.shift();
+  const tz = Session.getScriptTimeZone();
+  const items = data
+    .filter(r => r[0] !== '')
+    .map(r => ({
+      id: r[0],
+      date: (r[1] instanceof Date) ? Utilities.formatDate(r[1], tz, 'dd/MM/yyyy') : r[1],
+      boss: r[2],
+      item: r[3],
+      addedBy: r[4]
+    }))
+    .reverse();
+  return jsonOut({ ok: true, items });
+}
+
+function handleAssignVaultItem(p) {
+  const check = requireRole(p.token, ['admin', 'officer']);
+  if (!check.ok) return jsonOut(check);
+
+  const targetUsername = (p.targetUsername || '').trim();
+  if (!targetUsername) return jsonOut({ ok: false, error: 'Selecciona un jugador para asignar el ítem.' });
+
+  const vaultSheet = getVaultSheet();
+  const found = findVaultRow(vaultSheet, p.id);
+  if (!found) return jsonOut({ ok: false, error: 'Ese ítem ya no está en el baúl.' });
+
+  const lootSheet = getLootSheet();
+  lootSheet.appendRow([found.row[1], targetUsername, p.pClass || '', found.row[2], found.row[3]]);
+  vaultSheet.deleteRow(found.rowIndex);
+  return jsonOut({ ok: true });
+}
+
+function handleDeleteVaultItem(p) {
+  const check = requireRole(p.token, ['admin', 'officer']);
+  if (!check.ok) return jsonOut(check);
+
+  const vaultSheet = getVaultSheet();
+  const found = findVaultRow(vaultSheet, p.id);
+  if (!found) return jsonOut({ ok: false, error: 'Ese ítem ya no está en el baúl.' });
+
+  vaultSheet.deleteRow(found.rowIndex);
   return jsonOut({ ok: true });
 }
